@@ -21,6 +21,7 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const storedEvents = localStorage.getItem("events");
@@ -41,7 +42,7 @@ function App() {
         e.id === selectedEvent.id ? eventData : e
       );
     } else {
-      updatedEvents = [...events, eventData];
+      updatedEvents = [...events, { ...eventData, id: Date.now() }];
     }
     setEvents(updatedEvents);
     localStorage.setItem("events", JSON.stringify(updatedEvents));
@@ -81,12 +82,11 @@ function App() {
     const eventId = e.dataTransfer.getData("eventId");
 
     const existingEvents = getEventsForDay(day);
-    const draggedEvent = events.find((ev) => ev.id === eventId);
+    const draggedEvent = events.find((ev) => ev.id === parseInt(eventId));
 
-    // Conflict check: same time and same date
     const hasConflict = existingEvents.some(
       (e) =>
-        e.id !== eventId &&
+        e.id !== draggedEvent.id &&
         e.time === draggedEvent.time &&
         format(e.date, "yyyy-MM-dd") === format(day, "yyyy-MM-dd")
     );
@@ -97,7 +97,7 @@ function App() {
     }
 
     const updated = events.map((e) =>
-      e.id === eventId ? { ...e, date: new Date(day) } : e
+      e.id === draggedEvent.id ? { ...e, date: new Date(day) } : e
     );
     setEvents(updated);
     localStorage.setItem("events", JSON.stringify(updated));
@@ -125,7 +125,7 @@ function App() {
     const end = endOfWeek(endOfMonth(currentMonth));
 
     for (let d = start; d <= end; d = addDays(d, 1)) {
-      if (isBefore(d, event.date)) continue;
+      if (isBefore(d, new Date(event.date))) continue;
 
       switch (event.repeat) {
         case "daily":
@@ -175,6 +175,14 @@ function App() {
         <button onClick={nextMonth}>Next ⏭️</button>
       </div>
 
+      <input
+        type="text"
+        placeholder="Search events by title or description"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{ margin: "20px 0", padding: "8px", width: "100%" }}
+      />
+
       <div
         style={{
           display: "grid",
@@ -189,7 +197,12 @@ function App() {
           </div>
         ))}
         {generateDays().map((day, index) => {
-          const eventsForDay = getEventsForDay(day);
+          const eventsForDay = getEventsForDay(day).filter(
+            (e) =>
+              e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              e.description?.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+
           return (
             <div
               key={index}
