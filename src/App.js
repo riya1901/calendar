@@ -72,6 +72,41 @@ function App() {
     setShowModal(true);
   };
 
+  const handleDragStart = (eventObj, e) => {
+    e.dataTransfer.setData("eventId", String(eventObj.id));
+  };
+
+  const handleDrop = (day, e) => {
+    e.preventDefault();
+    const eventId = e.dataTransfer.getData("eventId");
+
+    const existingEvents = getEventsForDay(day);
+    const draggedEvent = events.find((ev) => ev.id === eventId);
+
+    // Conflict check: same time and same date
+    const hasConflict = existingEvents.some(
+      (e) =>
+        e.id !== eventId &&
+        e.time === draggedEvent.time &&
+        format(e.date, "yyyy-MM-dd") === format(day, "yyyy-MM-dd")
+    );
+
+    if (hasConflict) {
+      alert("❌ Conflict detected: Another event exists at the same time.");
+      return;
+    }
+
+    const updated = events.map((e) =>
+      e.id === eventId ? { ...e, date: new Date(day) } : e
+    );
+    setEvents(updated);
+    localStorage.setItem("events", JSON.stringify(updated));
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
   const generateDays = () => {
     const start = startOfWeek(startOfMonth(currentMonth));
     const end = endOfWeek(endOfMonth(currentMonth));
@@ -159,6 +194,8 @@ function App() {
             <div
               key={index}
               onClick={() => handleDayClick(day)}
+              onDrop={(e) => handleDrop(day, e)}
+              onDragOver={handleDragOver}
               style={{
                 padding: "10px",
                 border: "1px solid #ccc",
@@ -177,6 +214,8 @@ function App() {
               {eventsForDay.map((event, i) => (
                 <div
                   key={i}
+                  draggable
+                  onDragStart={(e) => handleDragStart(event, e)}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleEventClick(event, day);
@@ -215,4 +254,3 @@ function App() {
 }
 
 export default App;
-
