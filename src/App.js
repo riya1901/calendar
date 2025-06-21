@@ -36,14 +36,22 @@ function App() {
   }, []);
 
   const handleSaveEvent = (eventData) => {
+    const normalizedDate = new Date(
+      eventData.date.getFullYear(),
+      eventData.date.getMonth(),
+      eventData.date.getDate(),
+      eventData.date.getHours(),
+      eventData.date.getMinutes()
+    );
+    const newEvent = { ...eventData, date: normalizedDate };
+
     let updatedEvents;
     if (selectedEvent) {
-      updatedEvents = events.map((e) =>
-        e.id === selectedEvent.id ? eventData : e
-      );
+      updatedEvents = events.map((e) => (e.id === selectedEvent.id ? newEvent : e));
     } else {
-      updatedEvents = [...events, { ...eventData, id: Date.now() }];
+      updatedEvents = [...events, { ...newEvent, id: Date.now() }];
     }
+
     setEvents(updatedEvents);
     localStorage.setItem("events", JSON.stringify(updatedEvents));
     setSelectedEvent(null);
@@ -62,7 +70,7 @@ function App() {
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
   const handleDayClick = (date) => {
-    setSelectedDate(date);
+    setSelectedDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
     setSelectedEvent(null);
     setShowModal(true);
   };
@@ -125,35 +133,25 @@ function App() {
     const end = endOfWeek(endOfMonth(currentMonth));
 
     for (let d = start; d <= end; d = addDays(d, 1)) {
-      if (isBefore(d, new Date(event.date))) continue;
+      const isSame = isSameDay(d, new Date(event.date));
 
-      switch (event.repeat) {
-        case "daily":
+      if (event.repeat === "none" && isSame) {
+        instances.push({ ...event, date: new Date(d) });
+      } else if (event.repeat === "daily" && (isSame || isAfter(d, new Date(event.date)))) {
+        instances.push({ ...event, date: new Date(d) });
+      } else if (event.repeat === "weekly" && (isSame || isAfter(d, new Date(event.date)))) {
+        if (event.weekDays?.includes(d.getDay())) {
           instances.push({ ...event, date: new Date(d) });
-          break;
-        case "weekly":
-          if (event.weekDays?.includes(d.getDay())) {
-            instances.push({ ...event, date: new Date(d) });
-          }
-          break;
-        case "monthly":
-          if (d.getDate() === new Date(event.date).getDate()) {
-            instances.push({ ...event, date: new Date(d) });
-          }
-          break;
-        case "custom":
-          const diffDays = Math.floor(
-            (d - new Date(event.date)) / (1000 * 60 * 60 * 24)
-          );
-          if (diffDays % (event.customInterval || 1) === 0) {
-            instances.push({ ...event, date: new Date(d) });
-          }
-          break;
-        default:
-          if (format(d, "yyyy-MM-dd") === format(event.date, "yyyy-MM-dd")) {
-            instances.push(event);
-          }
-          break;
+        }
+      } else if (event.repeat === "monthly" && (isSame || isAfter(d, new Date(event.date)))) {
+        if (d.getDate() === new Date(event.date).getDate()) {
+          instances.push({ ...event, date: new Date(d) });
+        }
+      } else if (event.repeat === "custom" && (isSame || isAfter(d, new Date(event.date)))) {
+        const diffDays = Math.floor((d - new Date(event.date)) / (1000 * 60 * 60 * 24));
+        if (diffDays % (event.customInterval || 1) === 0) {
+          instances.push({ ...event, date: new Date(d) });
+        }
       }
     }
 
@@ -213,12 +211,16 @@ function App() {
                 padding: "10px",
                 border: "1px solid #ccc",
                 backgroundColor: isSameDay(day, new Date())
-                  ? "#ffeeba"
-                  : "white",
+                  ? "#ffcccc"
+                  : isSameMonth(day, currentMonth)
+                  ? "#f5f5f5"
+                  : "#eaeaea",
                 textAlign: "left",
-                color: isSameMonth(day, currentMonth) ? "black" : "#aaa",
+                color: isSameMonth(day, currentMonth) ? "black" : "#999",
                 cursor: "pointer",
-                minHeight: "80px"
+                minHeight: "80px",
+                borderRadius: "8px",
+                transition: "0.3s"
               }}
             >
               <div style={{ fontWeight: "bold", textAlign: "right" }}>
@@ -234,12 +236,14 @@ function App() {
                     handleEventClick(event, day);
                   }}
                   style={{
-                    background: "#d1ecf1",
-                    padding: "2px 4px",
+                    background: "#5bc0de",
+                    padding: "4px 6px",
                     borderRadius: "4px",
                     fontSize: "12px",
                     marginTop: "4px",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    color: "white",
+                    fontWeight: "500"
                   }}
                 >
                   {event.title}
