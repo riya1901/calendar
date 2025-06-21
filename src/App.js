@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   startOfMonth,
@@ -10,7 +9,9 @@ import {
   addMonths,
   subMonths,
   isSameMonth,
-  isSameDay
+  isSameDay,
+  isAfter,
+  isBefore
 } from "date-fns";
 import EventModal from "./EventModal";
 
@@ -19,13 +20,12 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // 🔁 Load events from localStorage on mount
   useEffect(() => {
     const storedEvents = localStorage.getItem("events");
     if (storedEvents) {
       const parsed = JSON.parse(storedEvents);
-      // Convert string date back to Date object
       const restored = parsed.map((e) => ({
         ...e,
         date: new Date(e.date)
@@ -34,12 +34,27 @@ function App() {
     }
   }, []);
 
-  // ➕ Save event + update localStorage
   const handleSaveEvent = (eventData) => {
-    const updatedEvents = [...events, eventData];
+    let updatedEvents;
+    if (selectedEvent) {
+      updatedEvents = events.map((e) =>
+        e.id === selectedEvent.id ? eventData : e
+      );
+    } else {
+      updatedEvents = [...events, eventData];
+    }
     setEvents(updatedEvents);
     localStorage.setItem("events", JSON.stringify(updatedEvents));
-    console.log("🎯 Saved Event:", eventData);
+    setSelectedEvent(null);
+    setShowModal(false);
+  };
+
+  const handleDeleteEvent = (id) => {
+    const filtered = events.filter((e) => e.id !== id);
+    setEvents(filtered);
+    localStorage.setItem("events", JSON.stringify(filtered));
+    setSelectedEvent(null);
+    setShowModal(false);
   };
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -47,6 +62,13 @@ function App() {
 
   const handleDayClick = (date) => {
     setSelectedDate(date);
+    setSelectedEvent(null);
+    setShowModal(true);
+  };
+
+  const handleEventClick = (event, date) => {
+    setSelectedDate(date);
+    setSelectedEvent(event);
     setShowModal(true);
   };
 
@@ -62,10 +84,51 @@ function App() {
     return days;
   };
 
+  const generateRecurringInstances = (event) => {
+    const instances = [];
+    const start = startOfWeek(startOfMonth(currentMonth));
+    const end = endOfWeek(endOfMonth(currentMonth));
+
+    for (let d = start; d <= end; d = addDays(d, 1)) {
+      if (isBefore(d, event.date)) continue;
+
+      switch (event.repeat) {
+        case "daily":
+          instances.push({ ...event, date: new Date(d) });
+          break;
+        case "weekly":
+          if (event.weekDays?.includes(d.getDay())) {
+            instances.push({ ...event, date: new Date(d) });
+          }
+          break;
+        case "monthly":
+          if (d.getDate() === new Date(event.date).getDate()) {
+            instances.push({ ...event, date: new Date(d) });
+          }
+          break;
+        case "custom":
+          const diffDays = Math.floor(
+            (d - new Date(event.date)) / (1000 * 60 * 60 * 24)
+          );
+          if (diffDays % (event.customInterval || 1) === 0) {
+            instances.push({ ...event, date: new Date(d) });
+          }
+          break;
+        default:
+          if (format(d, "yyyy-MM-dd") === format(event.date, "yyyy-MM-dd")) {
+            instances.push(event);
+          }
+          break;
+      }
+    }
+
+    return instances;
+  };
+
   const getEventsForDay = (day) => {
-    return events.filter(
-      (event) =>
-        format(event.date, "yyyy-MM-dd") === format(day, "yyyy-MM-dd")
+    const allEvents = events.flatMap((event) => generateRecurringInstances(event));
+    return allEvents.filter(
+      (e) => format(e.date, "yyyy-MM-dd") === format(day, "yyyy-MM-dd")
     );
   };
 
@@ -92,7 +155,6 @@ function App() {
         ))}
         {generateDays().map((day, index) => {
           const eventsForDay = getEventsForDay(day);
-
           return (
             <div
               key={index}
@@ -115,12 +177,17 @@ function App() {
               {eventsForDay.map((event, i) => (
                 <div
                   key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEventClick(event, day);
+                  }}
                   style={{
                     background: "#d1ecf1",
                     padding: "2px 4px",
                     borderRadius: "4px",
                     fontSize: "12px",
-                    marginTop: "4px"
+                    marginTop: "4px",
+                    cursor: "pointer"
                   }}
                 >
                   {event.title}
@@ -134,8 +201,13 @@ function App() {
       {showModal && selectedDate && (
         <EventModal
           selectedDate={selectedDate}
-          onClose={() => setShowModal(false)}
+          selectedEvent={selectedEvent}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedEvent(null);
+          }}
           onSave={handleSaveEvent}
+          onDelete={handleDeleteEvent}
         />
       )}
     </div>
