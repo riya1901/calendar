@@ -12,12 +12,25 @@ import {
   isSameMonth,
   isSameDay
 } from "date-fns";
+import EventModal from "./EventModal";
 
 function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+
+  const handleDayClick = (date) => {
+    setSelectedDate(date);
+    setShowModal(true);
+  };
+
+  const handleSaveEvent = (eventData) => {
+    console.log("Event Saved:", eventData);
+    // Yaha baad me event list me add karenge
+  };
 
   const generateDays = () => {
     const start = startOfWeek(startOfMonth(currentMonth));
@@ -46,18 +59,28 @@ function App() {
         {generateDays().map((day, index) => (
           <div
             key={index}
+            onClick={() => handleDayClick(day)}
             style={{
               padding: "10px",
               border: "1px solid #ccc",
               backgroundColor: isSameDay(day, new Date()) ? "#ffeeba" : "white",
               textAlign: "center",
-              color: isSameMonth(day, currentMonth) ? "black" : "#aaa"
+              color: isSameMonth(day, currentMonth) ? "black" : "#aaa",
+              cursor: "pointer"
             }}
           >
             {format(day, "d")}
           </div>
         ))}
       </div>
+
+      {showModal && (
+        <EventModal
+          selectedDate={selectedDate}
+          onClose={() => setShowModal(false)}
+          onSave={handleSaveEvent}
+        />
+      )}
     </div>
   );
 }
