@@ -1,70 +1,124 @@
-# Getting Started with Create React App
+# 📅 Event Calendar App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A dynamic, interactive React-based event calendar that allows users to manage their schedules with features like recurring events, drag-and-drop rescheduling, and conflict handling.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 📂 Folder Structure
 
-### `npm start`
+```bash
+src/
+├── App.js           # Main calendar logic
+├── EventModal.js    # Modal for creating/editing events
+└── index.js         # Entry point
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Features
 
-### `npm test`
+- 📆 **Monthly View** with current day highlight and navigation  
+- ➕ **Add, Edit, Delete Events**  
+- 🔁 **Recurring Events** (Daily, Weekly, Monthly, Custom)  
+- 🔁 **Custom Interval Support** (e.g., every 2 days)  
+- 🔁 **Weekly Repetition on Multiple Days**  
+- 🔁 **Date-specific Rendering** of recurrence  
+- 🔁 **No Repeat Events** support  
+- 🔁 **Multiple Event Support per day**  
+- 🔁 **Same Day, Time conflict validation**  
+- 🔁 **Conflict Detection** for overlapping events  
+- 🔁 **Smooth Drag-and-Drop Rescheduling** using native events  
+- 🔁 **Search and Filter** by title/description  
+- 🔁 **Persistent Events** using `localStorage`  
+- 💻 **Responsive Design** for mobile and desktop  
+ 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 🛠️ Tech Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Framework**: React  
+- **Date Library**: date-fns  
+- **Styling**: Inline CSS 
+- **Persistence**: LocalStorage  
+- **Drag & Drop**: Custom implementation using native events  
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🧑‍💻 Getting Started
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### ✅ 1. Clone the Repository
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+git clone https://github.com/riya1901/calendar.git
+cd calendar
+```
 
-## Learn More
+### ✅ 2. Install Dependencies
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Make sure you have **Node.js** and **npm** installed. Then run:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm install
+```
 
-### Code Splitting
+### ✅ 3. Start the Application
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+npm start
+```
 
-### Analyzing the Bundle Size
+Open your browser and visit: [http://localhost:3000](http://localhost:3000)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## 📝 Special Instructions
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- This project uses **localStorage** to store events.
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```js
+localStorage.removeItem("events");
+```
 
-### Deployment
+- Works best on **modern browsers** like **Chrome**, **Edge**.
+- **No backend required** — it's 100% frontend-based.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## 🌐 Live Demo
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+👉 [Click to View Live App](https://drive.google.com/file/d/1F6BT4SMfdCxoc09D4hsGt2p0tmN1M8RO/view?usp=sharing)  
+
+
+---
+
+## 📌 GitHub Repository
+
+🔗 [https://github.com/riya1901/calendar.git](https://github.com/riya1901/calendar.git)
+
+---
+
+## 💾 Git Commands to Push Project to GitHub
+
+```bash
+# 1⃣️ Initialize Git (if not already initialized)
+git init
+
+# 2⃣️ Add remote origin
+git remote add origin https://github.com/riya1901/calendar.git
+
+# 3⃣️ Stage all files
+git add .
+
+# 4⃣️ Commit your changes
+git commit -m "Initial commit"
+
+# 5⃣️ Push to GitHub (main branch)
+git push -u origin main
+```
+
+---
+
